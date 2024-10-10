@@ -78,8 +78,9 @@ def handle_docs_photo(message: Message) -> None:
                 delete_file(src)
                 return
 
-    except FileFormatError:
+    except FileFormatError as e:
         """Ошибка формата файла"""
+        print(f"Error occurred: {e}")
         delete_file(src)
         bot.set_state(message.from_user.id, None, message.chat.id)
         bot.send_message(message.from_user.id,

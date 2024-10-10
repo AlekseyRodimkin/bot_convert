@@ -3,8 +3,7 @@ from states.states import UserState
 from telebot.types import Message, ReplyKeyboardRemove
 from Exeptions.exeptions_classes import FileFormatError
 import os
-from handlers.custom_handlers.algorithms import pdf_to_docx, delete_file
-from handlers.custom_handlers.algorithms import convert_to_bw
+from handlers.custom_handlers.algorithms import convert_to_bw, delete_file, add_noise
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -18,7 +17,8 @@ def image(message: Message) -> None:
     :return
     """
     bot.send_message(message.from_user.id, "Вот что я могу делать с изображениями: \n"
-                                           "\n/dark - Конвертирование в черно-белую палитру")
+                                           "\n/dark - Конвертирование в черно-белую палитру\n"
+                                           "/noisy - Добавление шума\n")
     bot.set_state(message.from_user.id, UserState.waiting_action_image, message.chat.id)
 
 
@@ -31,16 +31,25 @@ def waiting_action_image(message: Message) -> None:
     :param message: Полученное в чате сообщение
     :return:
     """
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data["command"] = message.text[1:]
     bot.send_message(message.from_user.id, f"Пришлите изображение")
     bot.set_state(message.from_user.id, UserState.waiting_image, message.chat.id)
+
+
+def handle_conversion_error(message, error_code, save_path=None):
+    """Обработчик ошибок с завершением состояния и удалением файла."""
+    if save_path:
+        delete_file(save_path)
+    bot.set_state(message.from_user.id, None, message.chat.id)
+    bot.send_message(message.chat.id,
+                     f"Возникла ошибка (код ошибки {error_code})\nПожалуйста, сообщите в поддержку /help")
 
 
 @bot.message_handler(content_types=['photo'], state=UserState.waiting_image)
 def waiting_image(message: Message) -> None:
     """
-    Обработчик целевого действия
-    Переводит в состояние ".................................................."
-    Вызывает функцию ..................................
+    Обработчик получения изображения, конвертирует в ЧБ или добавляет шум
     :param message: Полученное в чате сообщение
     :return:
     """
@@ -48,35 +57,43 @@ def waiting_image(message: Message) -> None:
     file_info = bot.get_file(file_id)
     file_name = file_info.file_path.split('/')[1]
     file_path = file_info.file_path
-    downloaded_file = bot.download_file(file_path)
     save_path = os.path.join(uploads_path, file_name)
 
-    with open(save_path, 'wb') as new_file:
-        new_file.write(downloaded_file)
-
     try:
-        if not file_name.endswith('jpg') and not file_name.endswith('png'):
-            raise FileFormatError()
-        bot.reply_to(message, "Конвертирую...")
-        path_to_new_file = os.path.join(uploads_path, "monochrome_" + file_name)
+        downloaded_file = bot.download_file(file_path)
+        with open(save_path, 'wb') as new_file:
+            new_file.write(downloaded_file)
 
-        if convert_to_bw(save_path, path_to_new_file):
-            bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
+        if not file_name.lower().endswith(('jpg', 'png')):
+            raise FileFormatError()
+
+        bot.reply_to(message, "Конвертирую...")
+
+        with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+            command = data.get("command")
+            new_file_prefix = "monochrome_" if command == "dark" else "new_noisy."
+            path_to_new_file = os.path.join(uploads_path, new_file_prefix + file_name.split('.')[-1])
+
+            if command == "dark" and convert_to_bw(save_path, path_to_new_file):
+                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
+            elif command == "noisy" and add_noise(save_path):
+                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
+            else:
+                handle_conversion_error(message, "02", save_path)
+                return
+
             delete_file(save_path)
             delete_file(path_to_new_file)
             bot.set_state(message.from_user.id, None, message.chat.id)
-            return
-        else:
-            bot.send_message(message.chat.id,
-                             "Ошибка конвертирования, попробуйте еще раз или сообщите о проблеме по команде /help")
-            bot.set_state(message.from_user.id, None, message.chat.id)
-            delete_file(save_path)
-            return
 
     except FileFormatError:
         """Ошибка формата файла"""
-        # delete_file(save_path)
+        handle_conversion_error(message, "Некорректное расширение", save_path)
+
+    except FileNotFoundError as e:
+        """Ошибка пути"""
+        print(f"Error occurred: {e}")
+        handle_conversion_error(message, "01", save_path)
+
+    finally:
         bot.set_state(message.from_user.id, None, message.chat.id)
-        bot.send_message(message.from_user.id,
-                         f"Не корректное расширение исходного файла, нажмите /start чтобы получить список команд")
-        return

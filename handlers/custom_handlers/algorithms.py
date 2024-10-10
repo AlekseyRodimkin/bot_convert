@@ -41,7 +41,7 @@ def delete_file(obj: str) -> bool:
 def convert_to_bw(file_path: str, new_file_path: str) -> bool:
     """
     PIL
-    Функция конвертирования в черно-белую
+    Функция конвертирования картинки в черно-белую
     :param file_path: str: путь к файлу
     :param new_file_path: str: путь к новому файлу
     :return: bool
@@ -55,36 +55,35 @@ def convert_to_bw(file_path: str, new_file_path: str) -> bool:
         print(f"Error occurred: {e}")
         return False
 
-    # def change_size():
-    #     """Изменение размера картинки"""
-        # img_resized = img.resize((640, 480))
-        # img_resized.save('resized_example.jpg')
-        # pass
 
-    # def add_noise(image, noise_level=0.05):
-    #     """Добавление шума"""
-    #     width, height = image.size
-    #     for x in range(width):
-    #         for y in range(height):
-    #             r, g, b = image.getpixel((x, y))
-    #             if random.random() < noise_level:
-    #                 image.putpixel((x, y), (r + random.randint(-20, 20), g + random.randint(-20, 20), b + random.randint(-20, 20)))
-    #     return image
-    #
-    #
-    # # добавление шума к измененной картинке
-    # img_noisy = add_noise(img_resized)
-    # img_noisy.save('noisy_example.jpg')
-    #
-    #
-    # # добавление фона
-    # def add_background(image, background_color=(255, 255, 255)):
-    #     width, height = image.size
-    #     new_image = Image.new('RGB', (width, height + 100), background_color)
-    #     new_image.paste(image, (0, 100))
-    #     return new_image
-    #
-    #
-    # # добавление фона к измененной картинке
-    # img_background = add_background(img_noisy)
-    # img_background.save('background_example.jpg')
+def add_noise(file_path: str, noise_level=1):
+    """
+    Функция добавления шума к фото с использованием PIL
+    :param file_path: str: путь к файлу
+    :param noise_level: float: уровень шума (доля пикселей, к которым добавляется шум)
+    :return: bool
+    """
+    try:
+        # Открываем изображение и конвертируем его в формат RGB
+        img = Image.open(file_path).convert('RGB')
+
+        # Проходим по каждому пикселю изображения
+        for x in range(img.width):
+            for y in range(img.height):
+                r, g, b = img.getpixel((x, y))
+                # Добавляем шум к случайным пикселям с вероятностью noise_level
+                if random.random() < noise_level:
+                    # Добавляем случайные значения к каналам RGB и следим за границами 0-255
+                    r = max(0, min(255, r + random.randint(-20, 20)))
+                    g = max(0, min(255, g + random.randint(-20, 20)))
+                    b = max(0, min(255, b + random.randint(-20, 20)))
+                    img.putpixel((x, y), (r, g, b))
+
+        # Сохраняем изображение с шумом
+        new_name = os.path.join(uploads_path, "new_noisy." + file_path.split('.')[-1])
+        img.save(new_name)
+        return True
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return False
+
