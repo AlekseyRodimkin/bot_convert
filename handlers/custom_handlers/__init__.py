@@ -1,3 +1,4 @@
-from . import all_commands
+from . import pdf
+from . import image
 from . import algorithms
 

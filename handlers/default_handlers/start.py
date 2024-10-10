@@ -1,10 +1,5 @@
-from telebot.types import Message
-from keyboards.reply.contact import start_buttons
 from loader import bot
-from loguru import logger
-from states.contact_information import UserInfoState
-
-logger.add('logs/debug.log', format="{time} {level}    {message}", level="DEBUG")
+from telebot.types import Message, ReplyKeyboardRemove
 
 
 @bot.message_handler(commands=['start'])
@@ -16,7 +11,9 @@ def bot_start(message: Message):
     :param message: Полученное в чате сообщение
     :return:
     """
-    logger.debug("/start")
+    bot.delete_state(message.from_user.id)
     bot.send_message(message.from_user.id, f'Приветствую {message.from_user.first_name}\n'
-                                           f'Что вы хотите конвертировать',
-                     reply_markup=start_buttons())
+                                           '\nСписок моих команд: \n'
+                                           '\n/PDF - для конвертации PDF документ в формат DOCX (word) \n'
+                                           '/IMAGE - для работы с изображением\n',
+                     reply_markup=ReplyKeyboardRemove())

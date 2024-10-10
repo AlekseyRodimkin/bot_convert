@@ -1,9 +1,17 @@
 from telebot.handler_backends import State, StatesGroup
 
 
-class UserInfoState(StatesGroup):
+class UserState(StatesGroup):
     """Класс состояний пользователя"""
+
+    # PDF states
     converting = State()
     waiting_target_format = State()
     waiting_format = State()
-    waiting_file = State()
+    waiting_file_pdf = State()
+
+    # IMAGE states
+    waiting_action_image = State()
+    waiting_image = State()
+
+
