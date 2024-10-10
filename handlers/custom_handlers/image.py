@@ -58,7 +58,7 @@ def waiting_image(message: Message) -> None:
         if not file_name.endswith('jpg') and not file_name.endswith('png'):
             raise FileFormatError()
         bot.reply_to(message, "Конвертирую...")
-        path_to_new_file = os.path.join(uploads_path, "bw_" + file_name)
+        path_to_new_file = os.path.join(uploads_path, "monochrome_" + file_name)
 
         if convert_to_bw(save_path, path_to_new_file):
             bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
