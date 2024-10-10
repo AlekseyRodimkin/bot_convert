@@ -14,4 +14,7 @@ class UserState(StatesGroup):
     waiting_action_image = State()
     waiting_image = State()
 
+    # barcode states
+    waiting_numbers = State()
+
 

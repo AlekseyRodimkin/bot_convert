@@ -2,6 +2,8 @@ from pdf2docx import Converter
 import os
 from PIL import Image, ImageOps
 import random
+import barcode
+from barcode.writer import ImageWriter
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -87,3 +89,20 @@ def add_noise(file_path: str, noise_level=1):
         print(f"Error occurred: {e}")
         return False
 
+
+def get_barcode(numbers: str) -> bool:
+    """
+    Функция создания штрихкода с использованием pyBarcode
+    :param numbers: str: номера для штрихкода
+    :return: bool
+    """
+    try:
+        barcode_number = numbers
+        barcode_format = barcode.get_barcode_class('ean13')
+        barcode_image = barcode_format(barcode_number, writer=ImageWriter())
+        barcode_filename = os.path.join(uploads_path, 'barcode')
+        barcode_image.save(barcode_filename)
+        return True
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return False
