@@ -4,6 +4,8 @@ from PIL import Image, ImageOps
 import random
 import barcode
 from barcode.writer import ImageWriter
+from rembg import remove
+import cv2
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -102,6 +104,23 @@ def get_barcode(numbers: str) -> bool:
         barcode_image = barcode_format(barcode_number, writer=ImageWriter())
         barcode_filename = os.path.join(uploads_path, 'barcode')
         barcode_image.save(barcode_filename)
+        return True
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return False
+
+
+def remove_background(file_path: str, new_file_path: str) -> bool:
+    """
+    Функция удаления фона из изображения
+    :param file_path: str: путь к файлу
+    :param new_file_path: str: путь к новому файлу
+    :return: bool
+    """
+    try:
+        input = cv2.imread(file_path)
+        output = remove(input)
+        cv2.imwrite(new_file_path, output)
         return True
     except Exception as e:
         print(f"Error occurred: {e}")

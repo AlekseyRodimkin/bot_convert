@@ -3,7 +3,7 @@ from states.states import UserState
 from telebot.types import Message, ReplyKeyboardRemove
 from Exeptions.exeptions_classes import FileFormatError
 import os
-from handlers.custom_handlers.algorithms import convert_to_bw, delete_file, add_noise
+from handlers.custom_handlers.algorithms import convert_to_bw, delete_file, add_noise, remove_background
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -17,8 +17,9 @@ def image(message: Message) -> None:
     :return
     """
     bot.send_message(message.from_user.id, "Вот что я могу делать с изображениями: \n"
-                                           "\n/dark - Конвертирование в черно-белую палитру\n"
-                                           "/noisy - Добавление шума\n")
+                                           "\n/dark - конвертирование в черно-белую палитру\n"
+                                           "/noisy - добавление шума\n"
+                                           "/background - удаление фона с изображения")
     bot.set_state(message.from_user.id, UserState.waiting_action_image, message.chat.id)
 
 
@@ -71,15 +72,17 @@ def waiting_image(message: Message) -> None:
 
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             command = data.get("command")
-            new_file_prefix = "monochrome_" if command == "dark" else "new_noisy."
-            path_to_new_file = os.path.join(uploads_path, new_file_prefix + file_name.split('.')[-1])
+            new_file_prefix = "monochrome_" if command == "dark" else "new_"
+            path_to_new_file = os.path.join(uploads_path, new_file_prefix + file_name)
 
             if command == "dark" and convert_to_bw(save_path, path_to_new_file):
                 bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
             elif command == "noisy" and add_noise(save_path):
                 bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
+            elif command == "background" and remove_background(save_path, path_to_new_file):
+                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
             else:
-                handle_conversion_error(message, "02", save_path)
+                handle_conversion_error(message, "img.02", save_path)
                 return
 
             delete_file(save_path)
@@ -93,7 +96,7 @@ def waiting_image(message: Message) -> None:
     except FileNotFoundError as e:
         """Ошибка пути"""
         print(f"Error occurred: {e}")
-        handle_conversion_error(message, "01", save_path)
+        handle_conversion_error(message, "img.01", save_path)
 
     finally:
         bot.set_state(message.from_user.id, None, message.chat.id)

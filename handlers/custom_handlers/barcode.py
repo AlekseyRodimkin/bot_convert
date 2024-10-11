@@ -17,7 +17,7 @@ def image(message: Message) -> None:
     :param message: Полученное в чате сообщение (команда)
     :return
     """
-    bot.send_message(message.from_user.id, "Введите 12 цифр для генерации года")
+    bot.send_message(message.from_user.id, "Введите 12 цифр для генерации кода")
     bot.set_state(message.from_user.id, UserState.waiting_numbers, message.chat.id)
 
 
