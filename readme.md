@@ -49,5 +49,4 @@ python main.py
 - Pillow — для обработки изображений.
 - pdf2docx — для конвертации PDF в DOCX.
 - python-barcode — для генерации штрих-кода
-- python-barcode — для генерации штрих-кода
 - OpenCV — удаление фона с изображений
