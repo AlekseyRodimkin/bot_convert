@@ -17,4 +17,7 @@ class UserState(StatesGroup):
     # barcode states
     waiting_numbers = State()
 
+    # html
+    waiting_link = State()
+
 

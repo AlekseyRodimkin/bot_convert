@@ -17,7 +17,7 @@ def image(message: Message) -> None:
     :param message: Полученное в чате сообщение (команда)
     :return
     """
-    bot.send_message(message.from_user.id, "Введите 12 цифр для генерации кода")
+    bot.send_message(message.from_user.id, "🤖Введите 12 цифр для генерации кода")
     bot.set_state(message.from_user.id, UserState.waiting_numbers, message.chat.id)
 
 
@@ -31,10 +31,12 @@ def waiting_action_image(message: Message) -> None:
 
     if not message.text.isdigit():
         bot.set_state(message.from_user.id, None, message.chat.id)
-        bot.send_message(message.from_user.id, "Для генерации штрих-кода необходимо 12 цифр")
+        bot.send_message(message.from_user.id, "🤖Для генерации штрих-кода необходимо 12 цифр🔢")
+        return
     if len(message.text) != 12:
         bot.set_state(message.from_user.id, None, message.chat.id)
-        bot.send_message(message.from_user.id, "Количество цифр должно быть 12")
+        bot.send_message(message.from_user.id, "🤖Количество цифр должно быть 12🔢")
+        return 
 
     if get_barcode(message.text):
         barcode_filename = os.path.join(uploads_path, 'barcode.png')
@@ -51,4 +53,4 @@ def waiting_action_image(message: Message) -> None:
         delete_file(f'{barcode_filename}')
     else:
         bot.set_state(message.from_user.id, None, message.chat.id)
-        bot.send_message(message.from_user.id, "Ошибка генерации штрих-кода")
+        bot.send_message(message.from_user.id, "🤖Ошибка генерации штрих-кода🔧")

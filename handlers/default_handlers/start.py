@@ -12,9 +12,10 @@ def bot_start(message: Message):
     :return:
     """
     bot.delete_state(message.from_user.id)
-    bot.send_message(message.from_user.id, f'Приветствую {message.from_user.first_name}\n'
+    bot.send_message(message.from_user.id, f'🤖Приветствую: {message.from_user.first_name}\n'
                                            '\nСписок моих команд: \n'
-                                           '\n/PDF - конвертация PDF документа в формат DOCX (word) \n'
-                                           '/BAR - генерация штрих-кода \n'
-                                           '/IMAGE - редактирование изображений\n',
+                                           '\n/PDF - 📃конвертация PDF документа в формат DOCX (word)\n'
+                                           '/BAR - 📜генерация штрих-кода \n'
+                                           '/IMAGE - 🖼редактирование изображений\n'
+                                           '/HTML - 📝получить код страницы\n',
                      reply_markup=ReplyKeyboardRemove())

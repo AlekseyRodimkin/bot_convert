@@ -17,7 +17,7 @@ def pdf_to(message: Message) -> None:
     :param message: Полученное в чате сообщение
     :return
     """
-    bot.send_message(message.from_user.id, f"В какой формат конвертировать PDF файл",
+    bot.send_message(message.from_user.id, f"🤖В какой формат конвертировать PDF файл",
                      reply_markup=(pdf_to_target()))
     bot.set_state(message.from_user.id, UserState.waiting_target_format, message.chat.id)
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
@@ -38,7 +38,7 @@ def waiting_target_format(message: Message) -> None:
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data["to"] = '.' + message.text.lower()[1:]
 
-    bot.send_message(message.from_user.id, f"Пришлите файл", reply_markup=(ReplyKeyboardRemove()))
+    bot.send_message(message.from_user.id, f"🤖Пришлите файл", reply_markup=(ReplyKeyboardRemove()))
     bot.set_state(message.from_user.id, UserState.waiting_file_pdf, message.chat.id)
 
 
@@ -61,7 +61,7 @@ def handle_docs_photo(message: Message) -> None:
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             if not filename.endswith(data['format']):
                 raise FileFormatError()
-            bot.reply_to(message, "Конвертирую...")
+            bot.reply_to(message, "🤖Конвертирую...")
             src = os.path.join(basedir, '../../uploads', message.document.file_name)
             new_filename = filename.split('.')[0] + data['to']
 
@@ -73,7 +73,7 @@ def handle_docs_photo(message: Message) -> None:
                 return
             else:
                 bot.send_message(message.chat.id,
-                                 "Ошибка конвертирования, попробуйте еще раз или сообщите о проблеме по команде /help")
+                                 "🤖‼️Ошибка конвертирования, попробуйте еще или сообщите о проблеме по команде /help")
                 bot.set_state(message.from_user.id, None, message.chat.id)
                 delete_file(src)
                 return
@@ -84,5 +84,5 @@ def handle_docs_photo(message: Message) -> None:
         delete_file(src)
         bot.set_state(message.from_user.id, None, message.chat.id)
         bot.send_message(message.from_user.id,
-                         f"Не корректное расширение исходного файла, нажмите /start чтобы получить список команд")
+                         f"🤖❗️Не корректное расширение исходного файла, нажмите /start чтобы получить список команд")
         return

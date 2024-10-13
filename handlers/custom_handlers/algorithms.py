@@ -6,6 +6,7 @@ import barcode
 from barcode.writer import ImageWriter
 from rembg import remove
 import cv2
+import requests
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -125,3 +126,28 @@ def remove_background(file_path: str, new_file_path: str) -> bool:
     except Exception as e:
         print(f"Error occurred: {e}")
         return False
+
+
+def get_html(url):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+        response.raise_for_status()
+
+        if "text/html" not in response.headers.get("Content-Type", ""):
+            print("Ответ не является HTML.")
+            return
+
+        response.encoding = response.apparent_encoding
+        return response.text
+    except requests.exceptions.Timeout:
+        print("Истекло время ожидания запроса.")
+    except requests.exceptions.ConnectionError:
+        print("Ошибка соединения.")
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP ошибка: {e.response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Произошла ошибка при запросе: {e}")
+    return ""

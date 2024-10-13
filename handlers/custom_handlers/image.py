@@ -16,10 +16,10 @@ def image(message: Message) -> None:
     :param message: Полученное в чате сообщение (команда)
     :return
     """
-    bot.send_message(message.from_user.id, "Вот что я могу делать с изображениями: \n"
-                                           "\n/dark - конвертирование в черно-белую палитру\n"
-                                           "/noisy - добавление шума\n"
-                                           "/background - удаление фона с изображения")
+    bot.send_message(message.from_user.id, "🤖Вот что я могу делать с изображениями: \n"
+                                           "\n/dark - конвертирование в черно-белую палитру🔳\n"
+                                           "/noisy - добавление шума🔣\n"
+                                           "/background - удаление фона с изображения🔵")
     bot.set_state(message.from_user.id, UserState.waiting_action_image, message.chat.id)
 
 
@@ -34,7 +34,7 @@ def waiting_action_image(message: Message) -> None:
     """
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data["command"] = message.text[1:]
-    bot.send_message(message.from_user.id, f"Пришлите изображение")
+    bot.send_message(message.from_user.id, f"🤖Пришлите изображение")
     bot.set_state(message.from_user.id, UserState.waiting_image, message.chat.id)
 
 
@@ -44,7 +44,7 @@ def handle_conversion_error(message, error_code, save_path=None):
         delete_file(save_path)
     bot.set_state(message.from_user.id, None, message.chat.id)
     bot.send_message(message.chat.id,
-                     f"Возникла ошибка (код ошибки {error_code})\nПожалуйста, сообщите в поддержку /help")
+                     f"🤖‼️Возникла ошибка (код ошибки {error_code})\nПожалуйста, сообщите в поддержку: \n👨‍💻 /help")
 
 
 @bot.message_handler(content_types=['photo'], state=UserState.waiting_image)
@@ -68,7 +68,7 @@ def waiting_image(message: Message) -> None:
         if not file_name.lower().endswith(('jpg', 'png')):
             raise FileFormatError()
 
-        bot.reply_to(message, "Конвертирую...")
+        bot.reply_to(message, "🤖Конвертирую...")
 
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             command = data.get("command")
