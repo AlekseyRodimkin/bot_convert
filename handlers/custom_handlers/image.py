@@ -1,9 +1,11 @@
 from loader import bot
 from states.states import UserState
-from telebot.types import Message, ReplyKeyboardRemove
+from telebot.types import Message
 from Exeptions.exeptions_classes import FileFormatError
 import os
-from handlers.custom_handlers.algorithms import convert_to_bw, delete_file, add_noise, remove_background
+from handlers.custom_handlers.algorithms import get_monochrome, get_noise, remove_background, \
+    format_replace
+from handlers.custom_handlers.errors import clearing_uploads, handle_error
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -16,10 +18,11 @@ def image(message: Message) -> None:
     :param message: Полученное в чате сообщение (команда)
     :return
     """
-    bot.send_message(message.from_user.id, "🤖Вот что я могу делать с изображениями: \n"
-                                           "\n/dark - конвертирование в черно-белую палитру🔳\n"
-                                           "/noisy - добавление шума🔣\n"
-                                           "/background - удаление фона с изображения🔵")
+    bot.send_message(message.from_user.id, "🤖Вот что я могу делать с изображениями:\n"
+                                           "\n/format - конвертация jpg в png и обратно🔄\n"
+                                           "\n/back - удаление фона с изображения🔵\n"
+                                           "\n/noisy - добавление шума🔣\n"
+                                           "\n/monochrome - конвертирование в черно-белую палитру🔳")
     bot.set_state(message.from_user.id, UserState.waiting_action_image, message.chat.id)
 
 
@@ -32,19 +35,15 @@ def waiting_action_image(message: Message) -> None:
     :param message: Полученное в чате сообщение
     :return:
     """
+    if message.text == '/start':
+        bot.delete_state(message.from_user.id)
+        bot.send_message(message.from_user.id, "Вы вышли из режима работы с изображениями")
+        return
+
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data["command"] = message.text[1:]
     bot.send_message(message.from_user.id, f"🤖Пришлите изображение")
     bot.set_state(message.from_user.id, UserState.waiting_image, message.chat.id)
-
-
-def handle_conversion_error(message, error_code, save_path=None):
-    """Обработчик ошибок с завершением состояния и удалением файла."""
-    if save_path:
-        delete_file(save_path)
-    bot.set_state(message.from_user.id, None, message.chat.id)
-    bot.send_message(message.chat.id,
-                     f"🤖‼️Возникла ошибка (код ошибки {error_code})\nПожалуйста, сообщите в поддержку: \n👨‍💻 /help")
 
 
 @bot.message_handler(content_types=['photo'], state=UserState.waiting_image)
@@ -65,38 +64,36 @@ def waiting_image(message: Message) -> None:
         with open(save_path, 'wb') as new_file:
             new_file.write(downloaded_file)
 
-        if not file_name.lower().endswith(('jpg', 'png')):
-            raise FileFormatError()
-
         bot.reply_to(message, "🤖Конвертирую...")
 
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             command = data.get("command")
-            new_file_prefix = "monochrome_" if command == "dark" else "new_"
-            path_to_new_file = os.path.join(uploads_path, new_file_prefix + file_name)
+            new_file_path = os.path.join(uploads_path, f"{command}_{file_name}")
 
-            if command == "dark" and convert_to_bw(save_path, path_to_new_file):
-                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
-            elif command == "noisy" and add_noise(save_path):
-                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
-            elif command == "background" and remove_background(save_path, path_to_new_file):
-                bot.send_document(message.chat.id, open(path_to_new_file, 'rb'))
+            if command == "monochrome" and get_monochrome(save_path, new_file_path):
+                bot.send_document(message.chat.id, open(new_file_path, 'rb'))
+            elif command == "noisy" and get_noise(save_path, new_file_path):
+                bot.send_document(message.chat.id, open(new_file_path, 'rb'))
+            elif command == "back" and remove_background(save_path, new_file_path):
+                bot.send_document(message.chat.id, open(new_file_path, 'rb'))
+            elif command == "format":
+                result = format_replace(save_path)
+                if result:
+                    result_format = result.split('.')[-1]
+                    user_format = "jpg" if result_format == 'png' else "png"
+                    bot.send_message(message.from_user.id, f"Исходный формат: {user_format}\n"
+                                                           f"Новый формат: {result_format}")
+                    bot.send_document(message.chat.id, open(result, 'rb'))
+                else:
+                    handle_error(message, "Ошибка конвертации")
             else:
-                handle_conversion_error(message, "img.02", save_path)
+                handle_error(message, "Неверное действие")
                 return
-
-            delete_file(save_path)
-            delete_file(path_to_new_file)
-            bot.set_state(message.from_user.id, None, message.chat.id)
 
     except FileFormatError:
         """Ошибка формата файла"""
-        handle_conversion_error(message, "Некорректное расширение", save_path)
-
-    except FileNotFoundError as e:
-        """Ошибка пути"""
-        print(f"Error occurred: {e}")
-        handle_conversion_error(message, "img.01", save_path)
+        handle_error(message, "Некорректное расширение")
 
     finally:
         bot.set_state(message.from_user.id, None, message.chat.id)
+        clearing_uploads()

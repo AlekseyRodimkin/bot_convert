@@ -2,7 +2,9 @@ from loader import bot
 from states.states import UserState
 from telebot.types import Message
 import os
-from handlers.custom_handlers.algorithms import delete_file, get_html
+from handlers.custom_handlers.algorithms import get_html
+from handlers.custom_handlers.errors import clearing_uploads, handle_error
+
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -36,15 +38,11 @@ def waiting_link(message: Message) -> None:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
         except IOError as e:
-            # print(f"Ошибка при сохранении файла: {e}")
-            bot.set_state(message.from_user.id, None, message.chat.id)
-            bot.send_message(message.from_user.id, "🤖Ошибка сохранения файла, попробуйте позже...🔄")
-        # print("Страница успешно сохранена в results.html")
+            handle_error(message, "Ошибка сохранения файла")
         with open(file_path, 'rb') as file:
             bot.send_document(message.chat.id, file)
         bot.set_state(message.from_user.id, None, message.chat.id)
-        delete_file(f'{file_path}')
+        clearing_uploads()
+
     else:
-        # print("Не удалось сохранить страницу.")
-        bot.set_state(message.from_user.id, None, message.chat.id)
-        bot.send_message(message.from_user.id, "🤖Не удалось сохранить страницу, я сделал все что мог🔧")
+        handle_error(message, "Не удалось сохранить страницу")
