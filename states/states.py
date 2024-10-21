@@ -20,4 +20,6 @@ class UserState(StatesGroup):
     # html
     waiting_link = State()
 
+    # ip
+    waiting_ip = State()
 

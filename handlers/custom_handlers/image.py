@@ -33,7 +33,7 @@ def waiting_action_image(message: Message) -> None:
     Переводит в состояние ".................................................."
     Вызывает функцию ..................................
     :param message: Полученное в чате сообщение
-    :return:
+    :return:4d
     """
     if message.text == '/start':
         bot.delete_state(message.from_user.id)
@@ -79,6 +79,8 @@ def waiting_image(message: Message) -> None:
             elif command == "format":
                 result = format_replace(save_path)
                 if result:
+                    print('save', save_path)
+                    print('result', result)
                     result_format = result.split('.')[-1]
                     user_format = "jpg" if result_format == 'png' else "png"
                     bot.send_message(message.from_user.id, f"Исходный формат: {user_format}\n"

@@ -7,11 +7,13 @@ from barcode.writer import ImageWriter
 from rembg import remove
 import cv2
 import requests
+import urllib.request as urllib2
+import json
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
 
-def pdf_to_docx(pdf_path: str, docx_name: str) -> bool:
+def pdf_to_docx(pdf_path: str, docx_name: str) -> bool or None:
     """
     pdf2docx
     Функция конвертирования pdf -> docx
@@ -26,10 +28,10 @@ def pdf_to_docx(pdf_path: str, docx_name: str) -> bool:
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
 
 
-def get_monochrome(file_path: str, new_file_path: str) -> bool:
+def get_monochrome(file_path: str, new_file_path: str) -> bool or None:
     """
     PIL
     Функция конвертирования картинки в черно-белую
@@ -44,10 +46,10 @@ def get_monochrome(file_path: str, new_file_path: str) -> bool:
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
 
 
-def get_noise(file_path: str, new_file_path: str, noise_level=1):
+def get_noise(file_path: str, new_file_path: str, noise_level=1) -> bool or None:
     """
     Функция добавления шума к фото с использованием PIL
     :param file_path: str: путь к файлу
@@ -70,10 +72,10 @@ def get_noise(file_path: str, new_file_path: str, noise_level=1):
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
 
 
-def remove_background(file_path: str, new_file_path: str) -> bool:
+def remove_background(file_path: str, new_file_path: str) -> bool or None:
     """
     Функция удаления фона из изображения
     :param file_path: str: путь к файлу
@@ -87,7 +89,7 @@ def remove_background(file_path: str, new_file_path: str) -> bool:
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
 
 
 def get_html(url):
@@ -115,7 +117,7 @@ def get_html(url):
     return ""
 
 
-def format_replace(file_path: str, ) -> str or bool:
+def format_replace(file_path: str, ) -> str or None:
     """
     Функция конвертирования png в jpg и обратно
     :param file_path: str: путь к файлу
@@ -129,10 +131,10 @@ def format_replace(file_path: str, ) -> str or bool:
         return output_path
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
 
 
-def get_barcode(numbers: str, new_file_path: str) -> bool:
+def get_barcode(numbers: str, new_file_path: str) -> bool or None:
     """
     Функция создания штрих-кода с использованием pyBarcode
     :param numbers: str: номера для штрих-кода
@@ -147,4 +149,23 @@ def get_barcode(numbers: str, new_file_path: str) -> bool:
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return
+
+
+def get_ip_info(ip: str) -> None or dict:
+    """
+    Функция получения информации о IP адресе
+    :param ip: str: IP адрес
+    :return: dict or None
+    """
+    try:
+        url = f"http://ip-api.com/json/{ip}"
+        response = requests.get(url)
+        data = response.json()
+        if data["status"] == "fail":
+            print(f"Error: {data['message']}")
+            return
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error occurred: {e}")
+        return
