@@ -14,7 +14,7 @@ def bot_start(message: Message):
     bot.delete_state(message.from_user.id)
     bot.send_message(message.from_user.id, f'🤖Приветствую: {message.from_user.first_name}\n'
                                            '\nСписок моих команд: \n'
-                                           '\n/PDF - 📃конвертация PDF документа в формат DOCX (word)\n'
+                                           '\n/PDF - 📃работа с PDF файлами\n'
                                            '\n/BARCODE - 📜генерация штрих-кода \n'
                                            '\n/IMAGE - 🖼редактирование изображений\n'
                                            '\n/HTML - 📝получить код страницы\n'

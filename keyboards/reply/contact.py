@@ -7,7 +7,8 @@ def pdf_to_target() -> ReplyKeyboardMarkup:
     :return keyboard
     """
     keyboard = ReplyKeyboardMarkup()
-    keyboard.add((KeyboardButton("/DOCX")))
+    keyboard.add((KeyboardButton("/docx")))
+    keyboard.add((KeyboardButton("/mp3")))
     return keyboard
 
 

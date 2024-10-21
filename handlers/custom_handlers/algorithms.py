@@ -7,24 +7,47 @@ from barcode.writer import ImageWriter
 from rembg import remove
 import cv2
 import requests
-import urllib.request as urllib2
-import json
+import pdfplumber as pp
+from gtts import gTTS
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
 
-def pdf_to_docx(pdf_path: str, docx_name: str) -> bool or None:
+def pdf_to_docx(file_path: str, docx_name: str) -> bool or None:
     """
     pdf2docx
     Функция конвертирования pdf -> docx
-    :param pdf_path: str: путь к файлу
+    :param file_path: str: путь к файлу
     :param docx_name: str: имя документа
     :return: bool
     """
     try:
-        cv = Converter(pdf_path)
+        cv = Converter(file_path)
         cv.convert(docx_name, start=0, end=None)
         cv.close()
+        return True
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return
+
+
+def pdf_to_book(file_path: str, new_file_path: str):
+    """
+    pdfplumber
+    Функция создания книги из pdf
+    :param file_path: str: путь к файлу
+    :param new_file_path: str: путь к новой книге
+    :return: bool
+    """
+    try:
+        pdf_text = ''
+        print(file_path)
+        print(new_file_path)
+        with pp.open(file_path) as pdf:
+            for page in pdf.pages:
+                pdf_text += page.extract_text()
+        tts = gTTS(text=pdf_text, lang='ru')
+        tts.save(new_file_path)
         return True
     except Exception as e:
         print(f"Error occurred: {e}")

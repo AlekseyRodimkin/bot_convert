@@ -6,6 +6,7 @@ class UserState(StatesGroup):
 
     # PDF states
     converting = State()
+    waiting_subcommand = State()
     waiting_target_format = State()
     waiting_format = State()
     waiting_file_pdf = State()

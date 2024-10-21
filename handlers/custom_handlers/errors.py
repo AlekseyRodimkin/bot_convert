@@ -1,5 +1,7 @@
 import os
 from loader import bot
+from telebot.types import ReplyKeyboardRemove
+
 
 uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
@@ -9,7 +11,7 @@ def handle_error(message, error_code):
     clearing_uploads()
     bot.set_state(message.from_user.id, None, message.chat.id)
     bot.send_message(message.chat.id,
-                     f"‼️Ошибка ({error_code})‼️")
+                     f"‼️Ошибка ({error_code})‼️", reply_markup=ReplyKeyboardRemove())
 
 
 def clearing_uploads():
