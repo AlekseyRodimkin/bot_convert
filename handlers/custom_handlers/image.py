@@ -11,6 +11,11 @@ uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../up
 
 # Функция для отправки сообщения с командами
 def send_image_options(user_id: int):
+    """
+    Функция отправки функций
+    :param user_id: int: ID пользователя
+    :return: None
+    """
     bot.send_message(user_id, "🤖Вот что я могу делать с изображениями:\n"
                               "\n/format - конвертация jpg в png и обратно🔄\n"
                               "\n/back - удаление фона с изображения🔵\n"
@@ -18,14 +23,26 @@ def send_image_options(user_id: int):
                               "\n/monochrome - конвертирование в черно-белую палитру🔳")
 
 
-# Функция для отправки файла
 def send_file(chat_id: int, file_path: str):
+    """
+    Функция для отправки файла
+    :param chat_id: int: ID чата
+    :param file_path: str: путь к файлу
+    :return: None
+    """
     with open(file_path, 'rb') as file:
         bot.send_document(chat_id, file)
 
 
-# Функция для выполнения команды над изображением
 def process_image_command(command, save_path, new_file_path, message):
+    """
+    Функция выполнения команды над изображением
+    :param command: str: команда
+    :param save_path: str: путь к исходному изображению
+    :param new_file_path: str: путь к конвертированному изображению
+    :param message: Message: сообщение пользователя
+    :return: None
+    """
     if command == "monochrome" and get_monochrome(save_path, new_file_path):
         send_file(message.chat.id, new_file_path)
     elif command == "noisy" and get_noise(save_path, new_file_path):
@@ -46,16 +63,25 @@ def process_image_command(command, save_path, new_file_path, message):
         handle_error(message, "Неверное действие")
 
 
-# Обработчик команды конвертации IMAGE
 @bot.message_handler(commands=["IMAGE"])
 def image(message: Message) -> None:
+    """
+    Обработчик команды конвертации IMAGE.
+    Переводит в состояние "Ожидание действия".
+    :param message: Полученное в чате сообщение (команда)
+    :return:
+    """
     send_image_options(message.from_user.id)
     bot.set_state(message.from_user.id, UserState.waiting_action_image, message.chat.id)
 
 
-# Обработчик выбора действия
 @bot.message_handler(state=UserState.waiting_action_image)
 def waiting_action_image(message: Message) -> None:
+    """
+    Обработчик целевого действия
+    Переводит в состояние "Ожидание изображения".
+    :param message: Полученное в чате сообщение
+    """
     if message.text == '/start':
         bot.delete_state(message.from_user.id)
         bot.send_message(message.from_user.id, "Вы вышли из режима работы с изображениями")
@@ -68,9 +94,12 @@ def waiting_action_image(message: Message) -> None:
     bot.set_state(message.from_user.id, UserState.waiting_image, message.chat.id)
 
 
-# Обработчик получения изображения
 @bot.message_handler(content_types=['photo'], state=UserState.waiting_image)
 def waiting_image(message: Message) -> None:
+    """
+    Обработчик изображения
+    :param message: Полученное в чате сообщение
+    """
     file_id = message.photo[-1].file_id
     file_info = bot.get_file(file_id)
     file_name = file_info.file_path.split('/')[1]
