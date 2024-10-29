@@ -4,10 +4,11 @@ from states.states import UserState
 from telebot.types import Message, ReplyKeyboardRemove
 from Exeptions.exeptions_classes import FileFormatError
 import os
-from handlers.custom_handlers.algorithms import pdf_to_docx, pdf_to_book
-from handlers.custom_handlers.errors import clearing_uploads, handle_error
+from utils.misc import clear_uploads, error_handler
+from config_data.config import uploads_path
+from utils.misc.algorithms import pdf_to_docx, pdf_to_book
+from loguru import logger
 
-uploads_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 
 FORMAT_ACTIONS = {
     'docx': pdf_to_docx,
@@ -21,6 +22,8 @@ def pdf_to(message: Message) -> None:
     Обработчик команды конвертации pdf.
     Переводит в состояние "Ожидание целевого формата".
     """
+    logger.info(f'{message.from_user.id}: /PDF')
+
     bot.send_message(
         message.from_user.id,
         "docx - конвертация в word документ\n"
@@ -37,9 +40,11 @@ def waiting_target_format(message: Message) -> None:
     Обработчик целевого формата.
     Переводит в состояние "Ожидание файла" и сохраняет выбранный формат.
     """
+    logger.info(f'{message.from_user.id}: waiting_target_format({message.text})')
+
     target_format = message.text[1:]
     if target_format not in FORMAT_ACTIONS:
-        return handle_error(message, "Неверный формат. Пожалуйста, выберите PDF или MP3.")
+        return error_handler.main(message, "Неверный формат. Пожалуйста, выберите PDF или MP3.")
 
     bot.send_message(
         message.from_user.id,
@@ -59,8 +64,9 @@ def handle_docs_photo(message: Message) -> None:
     Конвертирует файл в выбранный формат.
     """
     try:
-        src = save_downloaded_file(message.document)
-        user_id = message.from_user.id
+        logger.info(f'{message.from_user.id}: handle_docs_photo(document)')
+
+        src = save_downloaded_file(message.document, message.from_user.id)
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             target_format = data.get('target_format')
 
@@ -68,32 +74,34 @@ def handle_docs_photo(message: Message) -> None:
             raise FileFormatError()
 
         bot.reply_to(message, "🤖Конвертирую...")
-        new_filename = os.path.join(uploads_path, f'your_new_file.{target_format}')
+        new_filename = os.path.join(f'{uploads_path}/{message.from_user.id}', f'your_new_file.{target_format}')
         conversion_function = FORMAT_ACTIONS.get(target_format)
 
         if conversion_function(src, new_filename):
             bot.send_document(message.chat.id, open(new_filename, 'rb'))
+            logger.info(f'{message.from_user.id}: send_document: docx')
         else:
-            handle_error(message, "Ошибка конвертирования")
+            error_handler.main(message, "Ошибка конвертирования")
 
     except FileFormatError:
-        handle_error(message, "Не корректное расширение исходного файла")
+        error_handler.main(message, "Не корректное расширение исходного файла")
 
     finally:
         bot.set_state(message.from_user.id, None, message.chat.id)
-        clearing_uploads()
+        clear_uploads.main(message.from_user.id)
 
 
-def save_downloaded_file(document) -> str:
+def save_downloaded_file(document, id) -> str:
     """
     Сохраняет загруженный файл на сервере.
     """
     file_info = bot.get_file(document.file_id)
     downloaded_file = bot.download_file(file_info.file_path)
-    src = os.path.join(uploads_path, document.file_name)
+    src = os.path.join(f'{uploads_path}/{id}', document.file_name)
 
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
+    logger.debug(f'pdf().save_file() : saved')
 
     return src
 

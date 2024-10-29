@@ -24,3 +24,7 @@ class UserState(StatesGroup):
     # ip
     waiting_ip = State()
 
+    # qr
+    waiting_qr_text = State()
+
+
