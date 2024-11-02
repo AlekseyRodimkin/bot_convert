@@ -27,4 +27,8 @@ class UserState(StatesGroup):
     # qr
     waiting_qr_text = State()
 
+    # text
+    waiting_action_text = State()
+    waiting_text = State()
+
 

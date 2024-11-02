@@ -4,3 +4,4 @@ from . import barcode
 from . import html
 from . import ip
 from . import qr
+from . import text
