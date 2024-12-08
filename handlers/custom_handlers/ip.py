@@ -1,32 +1,27 @@
 from loader import bot
-from states.states import UserState
 from telebot.types import Message
-from utils.misc import error_handler
-from utils.misc.algorithms import get_ip_info
+from handlers import error_handler
+from utils.misc.algorithms import get_ip
 from loguru import logger
-
+from handlers.handler_decorator import command_handler
+from states.states import UserState
 
 
 @bot.message_handler(commands=["IP"])
-def main(message: Message) -> None:
-    """
-    Обработчик команды получения информации о IP.
-    Переводит в состояние "Ожидание IP".
-    :param message: Полученное в чате сообщение (команда)
-    """
+@command_handler()
+def ip_main(message: Message) -> None:
+    """Обработчик команды IP"""
     logger.info(f'{message.from_user.id}: /IP')
     bot.send_message(message.from_user.id, "🤖Пришлите IP")
     bot.set_state(message.from_user.id, UserState.waiting_ip, message.chat.id)
 
 
 @bot.message_handler(state=UserState.waiting_ip)
-def waiting_ip(message: Message) -> None:
-    """
-    Обработчик ip
-    :param message: Полученное в чате сообщение
-    """
-    logger.info(f'{message.from_user.id}: waiting_ip({message.text})')
-    data = get_ip_info(message.text)
+@command_handler(state_required=UserState.waiting_ip)
+def get_ip_data(message: Message) -> None:
+    """Обработчик ip"""
+    logger.info(f'{message.from_user.id}: {message.text}.')
+    data = get_ip(message.text)
     if data:
         result = (f"IP:                 {data['query']}\n"
                   f"City:             {data['city']}\n"

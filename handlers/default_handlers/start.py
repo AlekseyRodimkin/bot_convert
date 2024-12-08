@@ -17,8 +17,9 @@ def bot_start(message: Message):
     :return:
     """
     logger.info(f'{message.from_user.id}: /start')
-
-    os.makedirs(f'{uploads_path}/{message.from_user.id}', exist_ok=True)
+    path_user_uploads_dir = f'{uploads_path}/{message.from_user.id}'
+    os.makedirs(path_user_uploads_dir, exist_ok=True)
+    os.chmod(path_user_uploads_dir, 0o755)
     logger.debug(f'mkdir: uploads/{message.from_user.id}')
 
     bot.delete_state(message.from_user.id)
@@ -30,5 +31,6 @@ def bot_start(message: Message):
                                            '\n/IMAGE - 🖼работа с изображениями\n'
                                            '\n/TEXT - 🔤работа с текстом\n'
                                            '\n/HTML - 📝получить код страницы\n'
-                                           '\n/IP - 📶получить информацию о IP\n',
+                                           '\n/IP - 📶получить информацию о IP\n'
+                                           '\n/YTB - 🎞скачать видео из youtube\n',
                      reply_markup=ReplyKeyboardRemove())
