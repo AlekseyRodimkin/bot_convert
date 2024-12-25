@@ -30,9 +30,3 @@ class UserState(StatesGroup):
     # text
     waiting_action_text = State()
     waiting_text = State()
-
-    # youtube
-    waiting_video_link = State()
-    waiting_resolution = State()
-
-

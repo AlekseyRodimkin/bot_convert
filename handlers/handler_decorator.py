@@ -11,9 +11,9 @@ def command_handler(state_required=None):
     def decorator(func):
         def wrapper(message: Message):
             try:
-                # if state_required and bot.get_state(message.from_user.id) != str(state_required):
-                #     bot.reply_to(message, "🤖 Ожидал другую команду.\n")
-                #     return
+                if state_required and bot.get_state(message.from_user.id) != str(state_required):
+                    bot.reply_to(message, "🤖 Ожидал другую команду.\n")
+                    return
                 if message.text == '/start':
                     clear_uploads.main(message.from_user.id)
                     bot.set_state(message.from_user.id, None, message.chat.id)
