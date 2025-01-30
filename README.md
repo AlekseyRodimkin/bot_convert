@@ -77,3 +77,6 @@ docker run bot_convert_app
 - python-barcode — для генерации штрих-кода
 - qrcode - для генерации QR кода
 - pdfplumber, gtts — создание аудио
+
+![QR](https://github.com/AlekseyRodimkin/bot_convert/raw/main/README_images/qr.png)
+
