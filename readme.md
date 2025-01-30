@@ -1,5 +1,5 @@
 # Синхронный Telegram-бот 
-- 🌐 Telegram: [not_file_bot](@not_file_bot)
+- 🌐 Telegram: [not_file_bot](https://t.me/not_file_bot)
 
 ## Функции
 
