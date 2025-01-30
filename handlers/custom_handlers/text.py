@@ -18,7 +18,7 @@ def send_media(message, media: BytesIO, media_type: str):
     """Функция для отправки медиа (аудио или изображения)."""
     try:
         if media_type == 'audio':
-            bot.send_audio(message.chat.id, media, title='Аудио', performer='TTS')
+            bot.send_audio(message.chat.id, media, title='Аудио', performer='Ваше')
         elif media_type == 'image':
             bot.send_photo(chat_id=message.chat.id, photo=media)
     except Exception as e:

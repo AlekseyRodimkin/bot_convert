@@ -1,10 +1,10 @@
+import os
 from loader import bot
 from telebot.types import Message
 from utils.misc.algorithms import get_barcode
 from handlers import error_handler
 from config_data.config import uploads_path
 from loguru import logger
-import os
 from handlers.handler_decorator import command_handler
 from states.states import UserState
 from utils.misc import clear_uploads

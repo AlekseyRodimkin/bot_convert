@@ -1,18 +1,13 @@
-import os
-import random
+import qrcode
+import pdfplumber as pp
+import requests
+import numpy as np
+import barcode
 from io import BytesIO
-from config_data.config import uploads_path
 from pdf2docx import Converter
 from PIL import Image, ImageFont, ImageDraw
 from loguru import logger
 from gtts import gTTS
-import qrcode
-import pdfplumber as pp
-import requests
-from rembg import remove
-import cv2
-import numpy as np
-import barcode
 from barcode.writer import ImageWriter
 from urllib.parse import urlparse
 
@@ -97,18 +92,6 @@ def _pdf_to_docx(file_path: str, docx_name: str) -> bool:
     return True
 
 
-def remove_background(file_path: str, new_file_path: str) -> bool:
-    logger.debug("remove_background()")
-    return safe_execute(lambda: _remove_background(file_path, new_file_path))
-
-
-def _remove_background(file_path: str, new_file_path: str) -> bool:
-    input_image = cv2.imread(file_path)
-    output = remove(input_image)
-    cv2.imwrite(new_file_path, output)
-    return True
-
-
 def get_noise(file_path: str, new_file_path: str, noise_level=0.1) -> bool:
     logger.debug("get_noise()")
     return safe_execute(lambda: _get_noise(file_path, new_file_path, noise_level))
@@ -116,13 +99,10 @@ def get_noise(file_path: str, new_file_path: str, noise_level=0.1) -> bool:
 
 def _get_noise(file_path: str, new_file_path: str, noise_level: float) -> bool:
     img = Image.open(file_path).convert('RGB')
-    img_data = np.array(img)
-
-    noise = np.random.randint(-20, 20, img_data.shape, dtype='int16')
-    mask = np.random.random(img_data.shape[:2]) < noise_level
-
-    img_data = np.clip(img_data + noise * mask[:, :, None], 0, 255).astype('uint8')
-    Image.fromarray(img_data).save(new_file_path)
+    img_data = np.array(img, dtype=np.float32)
+    noise = np.random.normal(0, 30 * noise_level, img_data.shape).astype(np.float32)
+    img_noisy = np.clip(img_data + noise, 0, 255).astype(np.uint8)
+    Image.fromarray(img_noisy).save(new_file_path)
     return True
 
 

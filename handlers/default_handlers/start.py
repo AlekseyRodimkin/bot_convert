@@ -1,6 +1,6 @@
+import os
 from loader import bot
 from telebot.types import Message, ReplyKeyboardRemove
-import os
 from config_data.config import uploads_path
 from loguru import logger
 

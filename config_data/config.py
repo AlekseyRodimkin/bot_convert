@@ -1,8 +1,7 @@
 import os
+import sys
 from dotenv import load_dotenv, find_dotenv
 from loguru import logger
-import sys
-
 
 if not find_dotenv():
     logger.error('.env is missing')

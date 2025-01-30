@@ -1,10 +1,10 @@
+import os
 from loader import bot
 from telebot.types import Message
 from utils.misc.algorithms import get_html, is_valid_url
 from handlers import error_handler
 from config_data.config import uploads_path
 from loguru import logger
-import os
 from handlers.handler_decorator import command_handler
 from states.states import UserState
 
@@ -19,7 +19,7 @@ def html_main(message: Message) -> None:
     bot.send_message(
         message.from_user.id,
         "🤖Пришлите ссылку для получения HTML-кода.\n\n"
-        "❗❗❗️Перед открытием убедитесь, что страница не содержит вредоносного кода или XSS."
+        "❗❗❗️Перед открытием убедитесь, что страница не содержит вредоносного кода."
     )
     bot.set_state(message.from_user.id, UserState.waiting_link, message.chat.id)
 

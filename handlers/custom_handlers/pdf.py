@@ -1,10 +1,10 @@
+import os
 from loader import bot
 from telebot.types import Message, ReplyKeyboardRemove
 from utils.misc.algorithms import pdf_to_docx, pdf_to_audio
 from handlers import error_handler
 from config_data.config import uploads_path
 from loguru import logger
-import os
 from handlers.handler_decorator import command_handler
 from states.states import UserState
 

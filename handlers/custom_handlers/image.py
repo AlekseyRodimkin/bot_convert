@@ -1,12 +1,13 @@
 from loader import bot
 from telebot.types import Message
-from utils.misc.algorithms import get_monochrome, get_noise, remove_background, format_replace
+from utils.misc.algorithms import get_monochrome, get_noise, format_replace
 from handlers import error_handler
 from config_data.config import uploads_path
 from loguru import logger
 import os
 from handlers.handler_decorator import command_handler
 from states.states import UserState
+from utils.misc import clear_uploads
 
 
 @bot.message_handler(commands=["IMAGE"])
@@ -18,7 +19,6 @@ def image_main(message: Message) -> None:
         message.from_user.id,
         "🤖Вот что я могу делать с изображениями:\n"
         "\n/format - конвертация jpg в png\n"
-        "\n/back - удаление фона🔵\n"
         "\n/noisy - добавление шума🔣\n"
         "\n/monochrome - черно-белая палитра🔳"
     )
@@ -31,7 +31,7 @@ def image_select_action(message: Message) -> None:
     """Обработка выбора действия для изображения."""
     logger.info(f'{message.from_user.id}: Выбранное действие - {message.text}')
     command = message.text.lstrip('/')
-    if command not in ["format", "back", "noisy", "monochrome"]:
+    if command not in ["format", "noisy", "monochrome"]:
         bot.reply_to(message, "Неверная команда. Выберите из предложенного списка.")
         return
 
@@ -67,19 +67,19 @@ def image_process(message: Message) -> None:
         COMMANDS = {
             "monochrome": get_monochrome,
             "noisy": lambda src, dest: get_noise(src, dest, noise_level=0.1),
-            "back": remove_background,
             "format": lambda src, _: format_replace(src),
         }
 
         action = COMMANDS.get(command)
         if action:
             result = action(save_path, new_file_path)
-            if isinstance(result, str):  # Для format_replace
+            if isinstance(result, str):
                 new_file_path = result
             if result:
                 with open(new_file_path, 'rb') as file:
                     bot.send_document(message.chat.id, file)
                 logger.info(f'{message.from_user.id}: Изображение обработано и отправлено.')
+                clear_uploads.main(message.from_user.id)
             else:
                 error_handler.main(message, f"Ошибка обработки команды {command}")
         else:

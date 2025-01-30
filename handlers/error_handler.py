@@ -1,11 +1,10 @@
-import os
 from loader import bot
 from telebot.types import ReplyKeyboardRemove
 from utils.misc import clear_uploads
 from loguru import logger
 
 
-def main(message, error_code, log = '') -> None:
+def main(message, error_code, log='') -> None:
     """
     Обработчик ошибок.
     Удаляет папку uploads/<user_id>
