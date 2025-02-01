@@ -32,6 +32,7 @@ def barcode_generate(message: Message) -> None:
     if get_barcode(message.text, barcode_path):
         bot.send_document(message.chat.id, open(f'{barcode_path}.png', 'rb'))
         logger.info(f'Штрих-код отправлен: {message.from_user.id}')
+        bot.set_state(message.from_user.id, None, message.chat.id)
         clear_uploads.main(message.from_user.id)
     else:
         error_handler.main(message, "Ошибка генерации штрих-кода")
