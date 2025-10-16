@@ -29,3 +29,7 @@
 - `pdfplumber`, `gtts` — для создания аудио
 
 <img src="https://github.com/AlekseyRodimkin/bot_convert/raw/main/README_images/qr.png" width="300">
+
+```bash
+docker build -t bot_convert:latest . && docker run --name bot_convert -d bot_convert:latest
+```
